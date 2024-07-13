@@ -30,7 +30,7 @@ def sample(
     motion_bucket_id: int = 127,
     cond_aug: float = 0.02,
     seed: int = 23,
-    decoding_t: int = 14,  # Number of frames decoded at a time! This eats most VRAM. Reduce if necessary.
+    decoding_t: int = 1,  # Number of frames decoded at a time! This eats most VRAM. Reduce if necessary.
     device: str = "cuda",
     output_folder: Optional[str] = None,
     elevations_deg: Optional[float | List[float]] = 10.0,  # For SV3D
@@ -95,13 +95,15 @@ def sample(
     else:
         raise ValueError(f"Version {version} does not exist.")
 
-    model, filter = load_model(
+    # model, filter = load_model(
+    model = load_model(
         model_config,
         device,
         num_frames,
         num_steps,
         verbose,
     )
+    model.half()
     torch.manual_seed(seed)
 
     path = Path(input_path)
@@ -173,7 +175,7 @@ def sample(
                         f"WARNING: Your image is of size {h}x{w} which is not divisible by 64. We are resizing to {height}x{width}!"
                     )
 
-        image = ToTensor()(input_image)
+        image = ToTensor()(input_image).half()
         image = image * 2.0 - 1.0
 
         image = image.unsqueeze(0).to(device)
@@ -248,7 +250,7 @@ def sample(
                         model.model, input, sigma, c, **additional_model_inputs
                     )
 
-                samples_z = model.sampler(denoiser, randn, cond=c, uc=uc)
+                samples_z = model.sampler(denoiser, randn, cond=c, uc=uc).half()
                 model.en_and_decode_n_samples_a_time = decoding_t
                 samples_x = model.decode_first_stage(samples_z)
                 if "sv3d" in version:
@@ -262,8 +264,8 @@ def sample(
                     os.path.join(output_folder, f"{base_count:06d}.jpg"), input_image
                 )
 
-                samples = embed_watermark(samples)
-                samples = filter(samples)
+                # samples = embed_watermark(samples)
+                # samples = filter(samples)
                 vid = (
                     (rearrange(samples, "t c h w -> t h w c") * 255)
                     .cpu()
@@ -341,8 +343,8 @@ def load_model(
     else:
         model = instantiate_from_config(config.model).to(device).eval()
 
-    filter = DeepFloydDataFiltering(verbose=False, device=device)
-    return model, filter
+    # filter = DeepFloydDataFiltering(verbose=False, device=device)
+    return model#, filter
 
 
 if __name__ == "__main__":
