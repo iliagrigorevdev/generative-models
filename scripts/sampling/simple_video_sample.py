@@ -22,10 +22,10 @@ from torchvision.transforms import ToTensor
 
 
 def sample(
-    input_path: str = "assets/test_image.png",  # Can either be image file or folder with image files
+    input_path: str = "assets/test_sv3d.png",  # Can either be image file or folder with image files
     num_frames: Optional[int] = None,  # 21 for SV3D
     num_steps: Optional[int] = None,
-    version: str = "svd",
+    version: str = "sv3d_u",
     fps_id: int = 6,
     motion_bucket_id: int = 127,
     cond_aug: float = 0.02,
