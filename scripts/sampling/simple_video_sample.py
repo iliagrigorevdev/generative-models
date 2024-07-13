@@ -164,8 +164,7 @@ def sample(
 
         else:
             with Image.open(input_img_path) as image:
-                if image.mode == "RGBA":
-                    input_image = image.convert("RGB")
+                input_image = image.convert("RGB")
                 w, h = image.size
 
                 if h % 64 != 0 or w % 64 != 0:
