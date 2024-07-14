@@ -11,6 +11,7 @@ model_id = "stabilityai/stable-diffusion-3-medium-diffusers"
 
 def sample(
     text: str,
+    negative_text: str = "",
     use_t5xxl_tokenizer: bool = False,
     translate_text: bool = True,
     resize_image: bool = True,
@@ -37,11 +38,20 @@ def sample(
     pipe = pipe.to("cuda")
 
     if translate_text:
-        prompt = Translator().translate(text).text
+        translator = Translator()
+        prompt = translator.translate(text).text
         print("Text: " + text)
+        if negative_text:
+            negative_prompt = translator.translate(negative_text).text
+            print("Negative text: " + negative_text)
+        else:
+            negative_prompt = negative_text
     else:
         prompt = text
+        negative_prompt = negative_text
     print("Prompt: " + prompt)
+    if negative_prompt:
+        print("Negative prompt: " + negative_prompt)
 
     generator = torch.Generator(device='cuda')
     if seed is not None:
@@ -53,7 +63,7 @@ def sample(
     for i in range(num_images):
         image = pipe(
             prompt=prompt,
-            negative_prompt="",
+            negative_prompt=negative_prompt,
             width=width,
             height=height,
             num_inference_steps=num_inference_steps,
