@@ -54,13 +54,15 @@ def sample(
         print("Negative prompt: " + negative_prompt)
 
     generator = torch.Generator(device='cuda')
-    if seed is not None:
-        generator.manual_seed(seed)
-    else:
-        generator.seed()
-    print(f"Seed: {generator.initial_seed()}")
 
     for i in range(num_images):
+        if i == 0 or seed is None:
+            if seed is not None:
+                generator.manual_seed(seed)
+            else:
+                generator.seed()
+            print(f"Seed: {generator.initial_seed()}")
+
         image = pipe(
             prompt=prompt,
             negative_prompt=negative_prompt,
